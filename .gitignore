@@ -1,0 +1,46 @@
+cat > .gitignore << 'EOF'
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# 编译输出
+**/target/
+*.class
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+
+# 敏感配置
+**/application-secret.yml
+**/application-dev.yml
+**/.env
+*.p12
+*.pem
+*.key
+
+# AI API 密钥
+**/api-keys.properties
+**/openai-keys.yml
+
+# 日志
+logs/
+**/logs/
+*.log
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.swp
+*~
+*.bak
+
+# 前端
+**/node_modules/
+**/dist/
+EOF

@@ -1,0 +1,39 @@
+server:
+  port: 8084
+  main:
+    web-application-type: reactive
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+  datasource:
+    url: jdbc:mysql://localhost:3306/easymall?allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2B8&characterEncoding=utf8
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  task:
+    scheduling:
+      pool:
+        size: 5
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+  ai:
+    # MCP 服务
+    mcp:
+      server:
+        protocol: STREAMABLE # STREAMABLE STATELESS
+        name: easymall-mcp  # 服务器名称
+        version: 1.0.0
+        streamable-http:
+          mcp-endpoint: /mcp  #默认是mcp
+          keep-alive-interval: 60s
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+#项目目录
+#项目目录
+project:
+  folder: d:/webser/web_app/easymall/
