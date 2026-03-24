@@ -33,7 +33,12 @@ public enum ResultCode {
 
     // 订单相关（3000-3999）
     ORDER_NOT_FOUND(3001, "订单不存在"),
-    ORDER_STATUS_ERROR(3002, "订单状态错误");
+    ORDER_STATUS_ERROR(3002, "订单状态错误"),
+
+    // 分类相关（4000-4099）
+    CATEGORY_NOT_FOUND(4001, "分类不存在"),
+    CATEGORY_HAS_CHILDREN(4002, "请先删除子分类"),
+    CATEGORY_NAME_EXISTS(4003, "分类名称已存在");
 
     private final Integer code;
     private final String message;
