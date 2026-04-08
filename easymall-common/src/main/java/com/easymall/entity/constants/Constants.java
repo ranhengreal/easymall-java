@@ -18,6 +18,19 @@ public class Constants {
     public static final Integer CATEGORY_MAX_DEPTH = 5;
     public static final Integer CATEGORY_MAX_SORT = 999;
 
+    // 品牌相关
+    public static final String REDIS_KEY_BRAND_LIST = REDIS_KEY_PREFIX + "brand:list";
+    public static final String REDIS_KEY_BRAND = REDIS_KEY_PREFIX + "brand:";
 
+    // 品牌 ID 前缀
+    public static final String BRAND_ID_PREFIX = "B";
+
+    // 品牌状态
+    public static final Integer BRAND_STATUS_ENABLE = 1;
+    public static final Integer BRAND_STATUS_DISABLE = 0;
+
+    // 商品相关
+    public static final String REDIS_KEY_PRODUCT_LIST = REDIS_KEY_PREFIX + "product:list";
+    public static final String REDIS_KEY_PRODUCT = REDIS_KEY_PREFIX + "product:";
 
 }
