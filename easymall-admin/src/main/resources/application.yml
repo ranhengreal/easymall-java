@@ -3,6 +3,9 @@ server:
   servlet:
     context-path: /api
 spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.vectorstore.elasticsearch.autoconfigure.ElasticsearchVectorStoreAutoConfiguration
   servlet:
     multipart:
       max-file-size: 5MB

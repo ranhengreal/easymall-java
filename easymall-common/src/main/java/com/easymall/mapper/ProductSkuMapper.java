@@ -47,4 +47,24 @@ public interface ProductSkuMapper {
      */
     @Select("SELECT MAX(sku_id) FROM product_sku")
     String getMaxSkuId();
+
+    // 在 ProductSkuMapper 中添加以下方法
+
+    /**
+     * 根据SKU ID查询SKU
+     */
+    @Select("SELECT * FROM product_sku WHERE sku_id = #{skuId}")
+    ProductSku selectBySkuId(@Param("skuId") String skuId);
+
+    /**
+     * 减少SKU库存
+     */
+    @Update("UPDATE product_sku SET stock = stock - #{quantity} WHERE sku_id = #{skuId} AND stock >= #{quantity}")
+    int decreaseStock(@Param("skuId") String skuId, @Param("quantity") Integer quantity);
+
+    /**
+     * 增加SKU库存（取消订单时恢复）
+     */
+    @Update("UPDATE product_sku SET stock = stock + #{quantity} WHERE sku_id = #{skuId}")
+    int increaseStock(@Param("skuId") String skuId, @Param("quantity") Integer quantity);
 }

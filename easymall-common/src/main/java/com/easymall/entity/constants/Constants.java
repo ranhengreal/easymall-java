@@ -33,4 +33,25 @@ public class Constants {
     public static final String REDIS_KEY_PRODUCT_LIST = REDIS_KEY_PREFIX + "product:list";
     public static final String REDIS_KEY_PRODUCT = REDIS_KEY_PREFIX + "product:";
 
+    // 订单相关
+    public static final String REDIS_KEY_ORDER_LIST = REDIS_KEY_PREFIX + "order:list";
+    public static final String REDIS_KEY_ORDER = REDIS_KEY_PREFIX + "order:";
+
+    // 订单状态
+    public static final Integer ORDER_STATUS_WAIT_PAY = 0;      // 待付款
+    public static final Integer ORDER_STATUS_WAIT_SHIP = 1;     // 待发货
+    public static final Integer ORDER_STATUS_WAIT_RECEIVE = 2;  // 待收货
+    public static final Integer ORDER_STATUS_COMPLETED = 3;     // 已完成
+    public static final Integer ORDER_STATUS_CANCELLED = 4;     // 已取消
+    public static final Integer ORDER_STATUS_AFTER_SALE = 5;    // 售后中
+
+    // 支付状态
+    public static final Integer PAY_STATUS_UNPAID = 0;   // 未支付
+    public static final Integer PAY_STATUS_PAID = 1;     // 已支付
+    public static final Integer PAY_STATUS_REFUND = 2;   // 已退款
+
+    // 支付方式
+    public static final Integer PAY_TYPE_WECHAT = 1;    // 微信支付
+    public static final Integer PAY_TYPE_ALIPAY = 2;    // 支付宝
+    public static final Integer PAY_TYPE_BALANCE = 3;   // 余额支付
 }

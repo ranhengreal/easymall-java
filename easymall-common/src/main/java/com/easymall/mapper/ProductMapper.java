@@ -79,4 +79,18 @@ public interface ProductMapper {
      */
     @Delete("DELETE FROM product WHERE product_id = #{productId}")
     int deleteById(@Param("productId") String productId);
+
+    // 在 ProductMapper 中添加以下方法
+
+    /**
+     * 更新商品库存
+     */
+    @Update("UPDATE product SET stock = #{stock} WHERE product_id = #{productId}")
+    int updateStock(@Param("productId") String productId, @Param("stock") Integer stock);
+
+    /**
+     * 增加商品销量
+     */
+    @Update("UPDATE product SET sales = sales + #{quantity} WHERE product_id = #{productId}")
+    int increaseSales(@Param("productId") String productId, @Param("quantity") Integer quantity);
 }

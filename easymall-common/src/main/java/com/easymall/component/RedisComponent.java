@@ -71,4 +71,36 @@ public class RedisComponent {
         redisUtils.delete(fullKey);
         log.info("删除管理员token - token: {}", token);
     }
+
+    // 用户相关
+    public static final String REDIS_KEY_USER_TOKEN = "easymall:user:token:";
+
+    /**
+     * 保存用户登录信息
+     */
+    public String saveUserToken(String userId, String account) {
+        String token = UUID.randomUUID().toString();
+        String fullKey = REDIS_KEY_USER_TOKEN + token;
+        redisUtils.setex(fullKey, userId, Constants.REDIS_KEY_EXPIRE_DAY);
+        log.info("保存用户token - token: {}, userId: {}", token, userId);
+        return token;
+    }
+
+    /**
+     * 获取用户ID
+     */
+    public String getUserIdByToken(String token) {
+        String fullKey = REDIS_KEY_USER_TOKEN + token;
+        Object value = redisUtils.get(fullKey);
+        return value == null ? null : value.toString();
+    }
+
+    /**
+     * 删除用户token
+     */
+    public void deleteUserToken(String token) {
+        String fullKey = REDIS_KEY_USER_TOKEN + token;
+        redisUtils.delete(fullKey);
+        log.info("删除用户token - token: {}", token);
+    }
 }
