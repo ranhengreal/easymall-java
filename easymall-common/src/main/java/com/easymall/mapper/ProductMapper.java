@@ -93,4 +93,10 @@ public interface ProductMapper {
      */
     @Update("UPDATE product SET sales = sales + #{quantity} WHERE product_id = #{productId}")
     int increaseSales(@Param("productId") String productId, @Param("quantity") Integer quantity);
+
+    /**
+     * 统计商品总数
+     */
+    @Select("SELECT COUNT(*) FROM product")
+    Integer countAll();
 }

@@ -10,6 +10,7 @@ spring:
   autoconfigure:
     exclude:
       - org.springframework.ai.vectorstore.elasticsearch.autoconfigure.ElasticsearchVectorStoreAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
   datasource:
     url: jdbc:mysql://localhost:3306/easymall?allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2B8&characterEncoding=utf8
@@ -32,3 +33,7 @@ mybatis:
 app:
   admin-account: admin
   admin-password: 123456
+
+# 上传文件绝对路径
+upload:
+  path: D:/Java实践项目/workspace-teach/easymall-java/easymall-uploads

@@ -71,6 +71,12 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Spring Security（用于 BCrypt 密码加密） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
         <!-- Spring AI MCP -->
         <dependency>
             <groupId>org.springframework.ai</groupId>

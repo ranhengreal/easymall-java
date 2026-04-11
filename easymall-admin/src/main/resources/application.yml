@@ -2,10 +2,12 @@ server:
   port: 6061
   servlet:
     context-path: /api
+
 spring:
   autoconfigure:
     exclude:
       - org.springframework.ai.vectorstore.elasticsearch.autoconfigure.ElasticsearchVectorStoreAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
   servlet:
     multipart:
       max-file-size: 5MB
@@ -23,21 +25,23 @@ spring:
     redis:
       host: 127.0.0.1
       port: 6379
-  #elasticsearch相关
   elasticsearch:
     uris: http://localhost:9200
-    #username: elastic  # 如果启用了安全认证
-    #password: your_password
+
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
-#项目目录
+
 project:
   folder: d:/webser/web_app/easymall/
+
 admin:
   account: admin
   password: admin123
-#日志级别
+
 log:
   root:
     level: debug
+
+upload:
+  path: ${user.dir}/easymall-uploads

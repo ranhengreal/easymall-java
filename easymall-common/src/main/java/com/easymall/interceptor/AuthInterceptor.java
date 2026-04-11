@@ -49,10 +49,16 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // 验证用户 userId
-        String userId = request.getHeader("userId");
-        if (userId == null || userId.isEmpty()) {
+        // 从 Authorization 头获取 token
+        String token = extractToken(request.getHeader("Authorization"));
+        if (token == null || token.isEmpty()) {
             return sendError(response, 401, "未登录，请先登录");
+        }
+
+        // 从 token 获取 userId
+        String userId = redisComponent.getUserIdByToken(token);
+        if (userId == null) {
+            return sendError(response, 401, "登录已过期，请重新登录");
         }
 
         request.setAttribute("userId", userId);
@@ -61,9 +67,10 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     private boolean isPublicApi(String uri) {
         String[] publicPaths = {
-                "/auth/login", "/auth/checkCode",
+                "/user/checkCode", "/user/login", "/user/register",
                 "/product/list", "/product/",
-                "/category/tree", "/brand/enabled"
+                "/category/tree", "/brand/enabled",
+                "/images/", "/test/"
         };
 
         for (String path : publicPaths) {

@@ -3,6 +3,7 @@ package com.easymall.mapper;
 import com.easymall.entity.po.Order;
 import org.apache.ibatis.annotations.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Mapper
@@ -102,4 +103,22 @@ public interface OrderMapper {
      */
     @Delete("DELETE FROM orders WHERE order_id = #{orderId}")
     int deleteById(@Param("orderId") String orderId);
+
+    /**
+     * 统计订单总数
+     */
+    @Select("SELECT COUNT(*) FROM orders")
+    Integer countAll();
+
+    /**
+     * 按状态统计订单数
+     */
+    @Select("SELECT COUNT(*) FROM orders WHERE order_status = #{status}")
+    Integer countByStatus(@Param("status") Integer status);
+
+    /**
+     * 统计已完成订单的总金额
+     */
+    @Select("SELECT SUM(pay_amount) FROM orders WHERE order_status = 3")
+    BigDecimal sumTotalAmountByStatus(@Param("status") Integer status);
 }
