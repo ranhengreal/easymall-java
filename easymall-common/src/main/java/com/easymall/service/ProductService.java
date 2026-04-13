@@ -35,11 +35,4 @@ public interface ProductService {
      * 删除商品（同时删除关联的SKU）
      */
     boolean delete(String productId);
-
-    // ==================== 排序 ====================
-
-    /**
-     * 批量更新排序
-     */
-    void batchUpdateSort(List<ProductDTO.Sort> sortList);
 }

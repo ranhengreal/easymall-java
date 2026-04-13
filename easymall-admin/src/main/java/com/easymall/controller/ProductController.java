@@ -84,7 +84,6 @@ public class ProductController {
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
         product.setStock(dto.getStock());
-        product.setSort(dto.getSort());
         product.setStatus(dto.getStatus());
 
         // 转换SKU
@@ -168,17 +167,5 @@ public class ProductController {
             return Result.success("删除成功");
         }
         return Result.error("删除失败");
-    }
-
-    // ==================== 排序接口 ====================
-
-    /**
-     * 批量更新排序
-     * PUT /product/sort/batch
-     */
-    @PutMapping("/sort/batch")
-    public Result<String> batchUpdateSort(@Valid @RequestBody List<ProductDTO.Sort> sortList) {
-        productService.batchUpdateSort(sortList);
-        return Result.success("排序更新成功");
     }
 }

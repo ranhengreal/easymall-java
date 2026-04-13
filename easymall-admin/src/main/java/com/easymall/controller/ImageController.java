@@ -18,24 +18,60 @@ public class ImageController {
     @Value("${upload.path}")
     private String uploadPath;
 
+    /**
+     * 获取品牌Logo
+     */
     @GetMapping("/images/brand/{date}/{filename}")
     public void getBrandImage(
             @PathVariable String date,
             @PathVariable String filename,
             HttpServletResponse response) {
 
-        // 使用 File.separator 确保路径分隔符正确
         String filePath = uploadPath + File.separator + "images" + File.separator + "brand" + File.separator + date + File.separator + filename;
+        filePath = filePath.replace("/", File.separator).replace("\\", File.separator);
+        writeImageToResponse(filePath, response);
+    }
 
-        // 或者替换所有斜杠
+    /**
+     * 获取商品图片
+     */
+    @GetMapping("/images/product/{date}/{filename}")
+    public void getProductImage(
+            @PathVariable String date,
+            @PathVariable String filename,
+            HttpServletResponse response) {
+
+        String filePath = uploadPath + File.separator + "images" + File.separator + "product" + File.separator + date + File.separator + filename;
         filePath = filePath.replace("/", File.separator).replace("\\", File.separator);
 
+        System.out.println("商品图片路径: " + filePath);
+        System.out.println("文件是否存在: " + new File(filePath).exists());
+
+        writeImageToResponse(filePath, response);
+    }
+
+    /**
+     * 获取用户头像
+     */
+    @GetMapping("/images/avatar/{date}/{filename}")
+    public void getAvatarImage(
+            @PathVariable String date,
+            @PathVariable String filename,
+            HttpServletResponse response) {
+
+        String filePath = uploadPath + File.separator + "images" + File.separator + "avatar" + File.separator + date + File.separator + filename;
+        filePath = filePath.replace("/", File.separator).replace("\\", File.separator);
+        writeImageToResponse(filePath, response);
+    }
+
+    /**
+     * 通用图片响应方法
+     */
+    private void writeImageToResponse(String filePath, HttpServletResponse response) {
         File file = new File(filePath);
 
-        System.out.println("请求图片路径: " + filePath);
-        System.out.println("文件是否存在: " + file.exists());
-
         if (!file.exists()) {
+            System.out.println("文件不存在: " + filePath);
             response.setStatus(404);
             return;
         }
@@ -48,6 +84,7 @@ public class ImageController {
                 contentType = "image/jpeg";
             }
             response.setContentType(contentType);
+            response.setHeader("Cache-Control", "max-age=3600");
 
             byte[] buffer = new byte[4096];
             int len;
@@ -57,6 +94,7 @@ public class ImageController {
             os.flush();
 
         } catch (Exception e) {
+            System.out.println("写入图片失败: " + e.getMessage());
             response.setStatus(500);
         }
     }

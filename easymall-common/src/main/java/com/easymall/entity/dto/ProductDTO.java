@@ -16,9 +16,7 @@ public class ProductDTO {
 
     // ==================== 请求 DTO ====================
 
-    /**
-     * 新增商品请求
-     */
+    // ProductDTO.Add 中删除 sort
     @Data
     public static class Add {
         @NotBlank(message = "商品名称不能为空")
@@ -29,11 +27,8 @@ public class ProductDTO {
         private String categoryId;
 
         private String brandId;
-
         private String mainImage;
-
         private String images;
-
         private String description;
 
         @NotNull(message = "价格不能为空")
@@ -44,9 +39,7 @@ public class ProductDTO {
         @Min(value = 0, message = "库存不能小于0")
         private Integer stock;
 
-        @Min(value = 0, message = "排序不能小于0")
-        @Max(value = 999, message = "排序不能大于999")
-        private Integer sort = 0;
+        // 删除 sort
 
         @Min(value = 0, message = "状态值只能是0或1")
         @Max(value = 1, message = "状态值只能是0或1")

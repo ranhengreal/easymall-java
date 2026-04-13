@@ -11,13 +11,13 @@ public interface ProductMapper {
     // ==================== 查询 ====================
 
     /**
-     * 查询所有商品
+     * 查询所有商品（按创建时间升序，新商品在后面）
      */
     @Select("SELECT p.*, c.category_name as categoryName, b.brand_name as brandName " +
             "FROM product p " +
             "LEFT JOIN category c ON p.category_id = c.category_id " +
             "LEFT JOIN brand b ON p.brand_id = b.brand_id " +
-            "ORDER BY p.sort ASC")
+            "ORDER BY p.create_time ASC")
     List<Product> selectAll();
 
     /**
@@ -48,9 +48,9 @@ public interface ProductMapper {
      * 新增商品
      */
     @Insert("INSERT INTO product (product_id, product_name, category_id, brand_id, " +
-            "main_image, images, description, price, stock, sort, status) " +
+            "main_image, images, description, price, stock, status) " +
             "VALUES (#{productId}, #{productName}, #{categoryId}, #{brandId}, " +
-            "#{mainImage}, #{images}, #{description}, #{price}, #{stock}, #{sort}, #{status})")
+            "#{mainImage}, #{images}, #{description}, #{price}, #{stock}, #{status})")
     int insert(Product product);
 
     /**
@@ -59,14 +59,8 @@ public interface ProductMapper {
     @Update("UPDATE product SET product_name = #{productName}, category_id = #{categoryId}, " +
             "brand_id = #{brandId}, main_image = #{mainImage}, images = #{images}, " +
             "description = #{description}, price = #{price}, stock = #{stock}, " +
-            "sort = #{sort}, status = #{status} WHERE product_id = #{productId}")
+            "status = #{status} WHERE product_id = #{productId}")
     int update(Product product);
-
-    /**
-     * 更新排序
-     */
-    @Update("UPDATE product SET sort = #{sort} WHERE product_id = #{productId}")
-    int updateSort(@Param("productId") String productId, @Param("sort") Integer sort);
 
     /**
      * 更新状态
@@ -79,8 +73,6 @@ public interface ProductMapper {
      */
     @Delete("DELETE FROM product WHERE product_id = #{productId}")
     int deleteById(@Param("productId") String productId);
-
-    // 在 ProductMapper 中添加以下方法
 
     /**
      * 更新商品库存

@@ -1,7 +1,6 @@
 package com.easymall.service.impl;
 
 import com.easymall.entity.constants.Constants;
-import com.easymall.entity.dto.ProductDTO;
 import com.easymall.entity.po.Product;
 import com.easymall.entity.po.ProductSku;
 import com.easymall.exception.BusinessException;
@@ -127,7 +126,7 @@ public class ProductServiceImpl implements ProductService {
         // 校验名称是否重复（排除自身）
         validateProductForUpdate(product);
 
-        // 更新商品（包含状态）
+        // 更新商品
         int result = productMapper.update(product);
 
         if (result > 0) {
@@ -136,7 +135,6 @@ public class ProductServiceImpl implements ProductService {
 
             if (product.getSkuList() != null && !product.getSkuList().isEmpty()) {
                 for (ProductSku sku : product.getSkuList()) {
-                    // 如果前端没有传SKU ID，生成新的
                     if (!StringUtils.hasText(sku.getSkuId())) {
                         sku.setSkuId(generateSkuId());
                     }
@@ -178,19 +176,6 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return result > 0;
-    }
-
-    // ==================== 排序实现 ====================
-
-    @Override
-    @Transactional
-    public void batchUpdateSort(List<ProductDTO.Sort> sortList) {
-        for (ProductDTO.Sort dto : sortList) {
-            productMapper.updateSort(dto.getProductId(), dto.getSort());
-        }
-
-        clearCache();
-        log.info("批量更新商品排序完成，共{}条", sortList.size());
     }
 
     // ==================== 辅助方法 ====================
