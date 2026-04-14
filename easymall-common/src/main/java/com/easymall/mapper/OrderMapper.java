@@ -11,56 +11,41 @@ public interface OrderMapper {
 
     // ==================== 查询 ====================
 
-    /**
-     * 查询所有订单
-     */
     @Select("SELECT * FROM orders ORDER BY create_time DESC")
     List<Order> selectAll();
 
-    /**
-     * 根据ID查询订单
-     */
     @Select("SELECT * FROM orders WHERE order_id = #{orderId}")
     Order selectById(@Param("orderId") String orderId);
 
-    /**
-     * 根据订单号查询订单
-     */
     @Select("SELECT * FROM orders WHERE order_sn = #{orderSn}")
     Order selectByOrderSn(@Param("orderSn") String orderSn);
 
-    /**
-     * 根据用户ID查询订单列表
-     */
     @Select("SELECT * FROM orders WHERE user_id = #{userId} ORDER BY create_time DESC")
     List<Order> selectByUserId(@Param("userId") String userId);
 
     /**
-     * 分页查询订单
+     * 条件查询订单（支持分页）
      */
     @Select("<script>" +
             "SELECT * FROM orders WHERE 1=1" +
             "<if test='orderSn != null and orderSn != \"\"'> AND order_sn LIKE CONCAT('%', #{orderSn}, '%')</if>" +
-            "<if test='userId != null and userId != \"\"'> AND user_id = #{userId}</if>" +
+            "<if test='userName != null and userName != \"\"'> AND user_name LIKE CONCAT('%', #{userName}, '%')</if>" +
             "<if test='orderStatus != null'> AND order_status = #{orderStatus}</if>" +
             "<if test='payStatus != null'> AND pay_status = #{payStatus}</if>" +
-            "<if test='startTime != null and startTime != \"\"'> AND create_time >= #{startTime}</if>" +
-            "<if test='endTime != null and endTime != \"\"'> AND create_time &lt;= #{endTime}</if>" +
             " ORDER BY create_time DESC" +
             "</script>")
-    List<Order> selectByCondition(Order condition);
+    List<Order> selectByCondition(
+            @Param("orderSn") String orderSn,
+            @Param("userName") String userName,
+            @Param("orderStatus") Integer orderStatus,
+            @Param("payStatus") Integer payStatus
+    );
 
-    /**
-     * 获取最大订单ID
-     */
     @Select("SELECT MAX(order_id) FROM orders")
     String getMaxOrderId();
 
     // ==================== 增删改 ====================
 
-    /**
-     * 新增订单
-     */
     @Insert("INSERT INTO orders (order_id, order_sn, user_id, user_name, total_amount, " +
             "discount_amount, freight_amount, pay_amount, pay_type, pay_status, order_status, " +
             "receiver_name, receiver_phone, receiver_province, receiver_city, receiver_district, " +
@@ -71,26 +56,17 @@ public interface OrderMapper {
             "#{receiverAddress}, #{receiverZip}, #{userNote})")
     int insert(Order order);
 
-    /**
-     * 更新订单
-     */
     @Update("UPDATE orders SET order_status = #{orderStatus}, " +
             "pay_status = #{payStatus}, pay_time = #{payTime}, " +
             "cancel_reason = #{cancelReason} WHERE order_id = #{orderId}")
     int update(Order order);
 
-    /**
-     * 更新订单状态
-     */
     @Update("UPDATE orders SET order_status = #{orderStatus}, " +
             "cancel_reason = #{cancelReason} WHERE order_id = #{orderId}")
     int updateStatus(@Param("orderId") String orderId,
                      @Param("orderStatus") Integer orderStatus,
                      @Param("cancelReason") String cancelReason);
 
-    /**
-     * 更新支付状态
-     */
     @Update("UPDATE orders SET pay_status = #{payStatus}, pay_time = #{payTime}, " +
             "pay_type = #{payType} WHERE order_id = #{orderId}")
     int updatePayStatus(@Param("orderId") String orderId,
@@ -98,27 +74,33 @@ public interface OrderMapper {
                         @Param("payTime") java.time.LocalDateTime payTime,
                         @Param("payType") Integer payType);
 
-    /**
-     * 删除订单
-     */
     @Delete("DELETE FROM orders WHERE order_id = #{orderId}")
     int deleteById(@Param("orderId") String orderId);
 
-    /**
-     * 统计订单总数
-     */
     @Select("SELECT COUNT(*) FROM orders")
     Integer countAll();
 
-    /**
-     * 按状态统计订单数
-     */
     @Select("SELECT COUNT(*) FROM orders WHERE order_status = #{status}")
     Integer countByStatus(@Param("status") Integer status);
 
-    /**
-     * 统计已完成订单的总金额
-     */
     @Select("SELECT SUM(pay_amount) FROM orders WHERE order_status = 3")
     BigDecimal sumTotalAmountByStatus(@Param("status") Integer status);
+
+    /**
+     * 更新订单备注
+     */
+    @Update("UPDATE orders SET remark = #{remark} WHERE order_id = #{orderId}")
+    int updateRemark(@Param("orderId") String orderId, @Param("remark") String remark);
+
+    /**
+     * 订单发货
+     */
+    @Update("UPDATE orders SET order_status = 2, " +
+            "logistics_company = #{logisticsCompany}, " +
+            "tracking_number = #{trackingNumber}, " +
+            "ship_time = NOW() " +
+            "WHERE order_id = #{orderId}")
+    int ship(@Param("orderId") String orderId,
+             @Param("logisticsCompany") String logisticsCompany,
+             @Param("trackingNumber") String trackingNumber);
 }

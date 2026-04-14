@@ -78,18 +78,32 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order getById(String orderId) {
         String cacheKey = Constants.REDIS_KEY_ORDER + orderId;
-        Order cached = (Order) redisUtils.get(cacheKey);
-        if (cached != null) {
-            log.debug("从缓存获取订单详情: {}", orderId);
-            return cached;
+
+        // 尝试从缓存获取
+        try {
+            Order cached = (Order) redisUtils.get(cacheKey);
+            if (cached != null) {
+                log.debug("从缓存获取订单详情: {}", orderId);
+                return cached;
+            }
+        } catch (Exception e) {
+            log.warn("从缓存获取订单失败，将直接从数据库读取: {}", e.getMessage());
         }
 
-        log.debug("缓存未命中，从数据库查询: {}", orderId);
+        // 从数据库查询
+        log.debug("从数据库查询订单: {}", orderId);
         Order order = orderMapper.selectById(orderId);
         if (order != null) {
             List<OrderItem> items = orderItemMapper.selectByOrderId(orderId);
             order.setItems(items);
-            redisUtils.setex(cacheKey, order, Constants.REDIS_KEY_EXPIRE_HOUR);
+
+            // 尝试设置缓存
+            try {
+                redisUtils.setex(cacheKey, order, Constants.REDIS_KEY_EXPIRE_HOUR);
+                log.debug("设置订单缓存成功: {}", orderId);
+            } catch (Exception e) {
+                log.warn("设置订单缓存失败: {}", e.getMessage());
+            }
         }
         return order;
     }
@@ -101,12 +115,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> query(OrderDTO.Query query) {
-        Order condition = new Order();
-        condition.setOrderSn(query.getOrderSn());
-        condition.setUserId(query.getUserId());
-        condition.setOrderStatus(query.getOrderStatus());
-        condition.setPayStatus(query.getPayStatus());
-        return orderMapper.selectByCondition(condition);
+        // 调用修改后的 Mapper 方法
+        return orderMapper.selectByCondition(
+                query.getOrderSn(),
+                query.getUserName(),
+                query.getOrderStatus(),
+                query.getPayStatus()
+        );
     }
 
     // ==================== 增删改实现 ====================
@@ -388,6 +403,19 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    @Override
+    public int updateRemark(String orderId, String remark) {
+        int result = orderMapper.updateRemark(orderId, remark);
+        if (result > 0) {
+            // 清除订单缓存
+            clearOrderCache(orderId);
+            // 清除订单列表缓存
+            clearCache();
+            log.info("更新备注成功并清除缓存: orderId={}", orderId);
+        }
+        return result;
+    }
+
     /**
      * 生成订单ID
      */
@@ -412,6 +440,59 @@ public class OrderServiceImpl implements OrderService {
         return "ITM" + timestamp;
     }
 
+    /**
+     * 订单发货
+     */
+    @Override
+    @Transactional
+    public boolean ship(String orderId, String logisticsCompany, String trackingNumber) {
+        try {
+            // 1. 查询订单
+            Order existing = orderMapper.selectById(orderId);
+            if (existing == null) {
+                throw new BusinessException("订单不存在");
+            }
+
+            // 2. 校验：只有待发货的订单才能发货
+            if (existing.getOrderStatus() != Constants.ORDER_STATUS_WAIT_SHIP) {
+                throw new BusinessException("只有待发货的订单才能发货，当前状态：" + getStatusText(existing.getOrderStatus()));
+            }
+
+            // 3. 校验：只有已支付的订单才能发货
+            if (existing.getPayStatus() != Constants.PAY_STATUS_PAID) {
+                throw new BusinessException("订单未支付，无法发货");
+            }
+
+            // 4. 调用 Mapper 中专门的发货方法
+            int result = orderMapper.ship(orderId, logisticsCompany, trackingNumber);
+            if (result > 0) {
+                clearCache();
+                clearOrderCache(orderId);
+                log.info("发货成功: orderId={}, 物流公司={}, 物流单号={}",
+                        orderId, logisticsCompany, trackingNumber);
+            }
+            return result > 0;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("发货失败", e);
+            throw new BusinessException("发货失败：" + e.getMessage());
+        }
+    }
+    /**
+     * 获取状态文本（用于错误提示）
+     */
+    private String getStatusText(Integer status) {
+        switch (status) {
+            case 0: return "待付款";
+            case 1: return "待发货";
+            case 2: return "待收货";
+            case 3: return "已完成";
+            case 4: return "已取消";
+            case 5: return "售后中";
+            default: return "未知";
+        }
+    }
     private void clearCache() {
         redisUtils.delete(Constants.REDIS_KEY_ORDER_LIST);
     }

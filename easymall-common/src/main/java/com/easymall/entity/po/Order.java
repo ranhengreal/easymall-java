@@ -30,7 +30,14 @@ public class Order {
     private String cancelReason;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    private String remark;
 
+
+    private String logisticsCompany;  // 物流公司
+    private String trackingNumber;    // 物流单号
+    private LocalDateTime cancelTime; // 取消时间
+    private LocalDateTime shipTime;   // 发货时间
+    private LocalDateTime receiveTime;// 收货时间
     // 关联字段
     private List<OrderItem> items;
 }

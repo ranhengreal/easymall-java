@@ -60,4 +60,15 @@ public interface OrderService {
      * 删除订单
      */
     boolean delete(String orderId);
+
+    /**
+     * 更新订单备注
+     */
+    int updateRemark(String orderId, String remark);
+
+    /**
+     * 订单发货
+     */
+    boolean ship(String orderId, String logisticsCompany, String trackingNumber);
+
 }

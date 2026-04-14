@@ -6,11 +6,11 @@ import com.easymall.entity.po.Order;
 import com.easymall.entity.result.Result;
 import com.easymall.service.OrderService;
 import jakarta.annotation.Resource;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/order")
@@ -20,15 +20,23 @@ public class OrderController {
     @Resource
     private OrderService orderService;
 
-    // ==================== 查询接口 ====================
+    // ==================== 管理端查询接口 ====================
 
     /**
-     * 获取所有订单列表（管理员接口）
-     * GET /order
+     * 获取所有订单列表
      */
-    @GetMapping
-    public Result<List<OrderDTO.Response>> getList() {
-        List<Order> list = orderService.getList();
+    @GetMapping("/list")
+    public Result<List<OrderDTO.Response>> queryByCondition(
+            @RequestParam(required = false) String orderSn,
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) Integer orderStatus) {
+
+        OrderDTO.Query query = new OrderDTO.Query();
+        query.setOrderSn(orderSn);
+        query.setUserName(userName);
+        query.setOrderStatus(orderStatus);
+
+        List<Order> list = orderService.query(query);
         List<OrderDTO.Response> response = list.stream()
                 .map(OrderDTO.Response::fromPO)
                 .toList();
@@ -36,26 +44,16 @@ public class OrderController {
     }
 
     /**
-     * 获取订单详情
-     * GET /order/{orderId}
+     * 获取订单详情（管理端无权限校验）
      */
     @GetMapping("/{orderId}")
-    public Result<OrderDTO.Response> getById(@PathVariable String orderId,
-                                             @RequestHeader(value = "userId", required = false) String userId,
-                                             @RequestHeader(value = "role", required = false) String role) {
+    public Result<OrderDTO.Response> getById(@PathVariable String orderId) {
         Order order = orderService.getById(orderId);
         if (order == null) {
             return Result.error(404, "订单不存在");
         }
 
-        // 如果不是管理员，需要校验订单归属
-        boolean isAdmin = "admin".equals(role);
-        if (!isAdmin && userId != null && !order.getUserId().equals(userId)) {
-            return Result.error(403, "无权查看此订单");
-        }
-
         OrderDTO.Response response = OrderDTO.Response.fromPO(order);
-
         if (order.getItems() != null) {
             List<OrderDTO.OrderItemResponse> items = order.getItems().stream()
                     .map(item -> {
@@ -76,134 +74,83 @@ public class OrderController {
                     .toList();
             response.setItems(items);
         }
-
         return Result.success(response);
     }
 
+    // ==================== 管理端操作接口 ====================
+
     /**
-     * 获取当前用户的订单列表（用户接口）
-     * GET /order/user
+     * 订单发货
      */
-    @GetMapping("/user")
-    public Result<List<OrderDTO.Response>> getMyOrders(@RequestHeader(value = "userId", required = true) String userId) {
-        List<Order> list = orderService.getByUserId(userId);
-        List<OrderDTO.Response> response = list.stream()
-                .map(OrderDTO.Response::fromPO)
-                .toList();
-        return Result.success(response);
+    @PutMapping("/{orderId}/ship")
+    public Result<String> ship(@PathVariable String orderId,
+                               @RequestBody Map<String, String> body) {
+        String logisticsCompany = body.get("logisticsCompany");
+        String trackingNumber = body.get("trackingNumber");
+
+        log.info("订单发货: orderId={}, 物流公司={}, 物流单号={}",
+                orderId, logisticsCompany, trackingNumber);
+
+        boolean success = orderService.ship(orderId, logisticsCompany, trackingNumber);
+        if (success) {
+            return Result.success("发货成功");
+        }
+        return Result.error("发货失败");
     }
 
     /**
-     * 条件查询订单（支持多条件筛选）
-     * GET /order/list?orderStatus=1&startTime=2024-01-01&endTime=2024-12-31
+     * 取消订单（管理员）
      */
-    @GetMapping("/list")
-    public Result<List<OrderDTO.Response>> queryByCondition(
-            @RequestParam(required = false) String orderSn,
-            @RequestParam(required = false) String userId,
-            @RequestParam(required = false) Integer orderStatus,
-            @RequestParam(required = false) Integer payStatus,
-            @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime,
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize,
-            @RequestHeader(value = "role", required = false) String role) {
+    @PutMapping("/{orderId}/cancel")
+    public Result<String> cancel(@PathVariable String orderId,
+                                 @RequestBody(required = false) Map<String, String> body) {
+        String cancelReason = body != null ? body.get("cancelReason") : "管理员取消";
+        log.info("管理员取消订单: orderId={}, 原因={}", orderId, cancelReason);
 
-        // 普通用户只能查自己的订单
-        boolean isAdmin = "admin".equals(role);
-        if (!isAdmin && userId == null) {
-            // 非管理员且没有传userId，无法查询
-            return Result.error(403, "无权查询");
+        boolean success = orderService.cancel(orderId, cancelReason);
+        if (success) {
+            return Result.success("订单已取消");
         }
-
-        OrderDTO.Query query = new OrderDTO.Query();
-        query.setOrderSn(orderSn);
-        query.setUserId(isAdmin ? userId : null); // 管理员可以指定userId，普通用户不能
-        query.setOrderStatus(orderStatus);
-        query.setPayStatus(payStatus);
-        query.setStartTime(startTime);
-        query.setEndTime(endTime);
-        query.setPageNum(pageNum);
-        query.setPageSize(pageSize);
-
-        List<Order> list = orderService.query(query);
-        List<OrderDTO.Response> response = list.stream()
-                .map(OrderDTO.Response::fromPO)
-                .toList();
-        return Result.success(response);
-    }
-
-    // ==================== 操作接口 ====================
-
-    /**
-     * 创建订单
-     * POST /order
-     */
-    @PostMapping
-    public Result<OrderDTO.Response> create(@Valid @RequestBody OrderDTO.Create dto,
-                                            @RequestHeader(value = "userId", required = true) String userId) {
-        Order order = orderService.create(dto, userId);
-        log.info("创建订单成功: userId={}, orderId={}", userId, order.getOrderId());
-        return Result.success(OrderDTO.Response.fromPO(order));
+        return Result.error("取消失败");
     }
 
     /**
-     * 更新订单（统一接口）
-     * PUT /order/{orderId}
+     * 更新订单备注
      */
-    @PutMapping("/{orderId}")
-    public Result<String> update(@PathVariable String orderId,
-                                 @Valid @RequestBody OrderDTO.Update dto,
-                                 @RequestHeader(value = "userId", required = true) String userId) {
+    @PutMapping("/{orderId}/remark")
+    public Result<String> updateRemark(@PathVariable String orderId,
+                                       @RequestBody Map<String, String> body) {
+        String remark = body.get("remark");
+        log.info("更新订单备注: orderId={}, remark={}", orderId, remark);
 
-        // 校验订单是否属于当前用户
-        Order order = orderService.getById(orderId);
-        if (order == null) {
-            return Result.error(404, "订单不存在");
+        int result = orderService.updateRemark(orderId, remark);
+        if (result > 0) {
+            return Result.success("备注更新成功");
         }
-        if (!order.getUserId().equals(userId)) {
-            return Result.error(403, "无权操作此订单");
-        }
-
-        // 1. 如果有支付状态变更，更新支付状态
-        if (dto.getPayStatus() != null) {
-            orderService.updatePayStatus(orderId, dto.getPayStatus(), dto.getPayType());
-        }
-
-        // 2. 如果有订单状态变更，更新订单状态
-        if (dto.getOrderStatus() != null) {
-            if (dto.getOrderStatus() == Constants.ORDER_STATUS_CANCELLED) {
-                orderService.cancel(orderId, dto.getCancelReason());
-            } else if (dto.getOrderStatus() == Constants.ORDER_STATUS_COMPLETED) {
-                orderService.confirmReceive(orderId);
-            } else {
-                orderService.updateStatus(orderId, dto.getOrderStatus(), dto.getCancelReason());
-            }
-        }
-
-        log.info("更新订单成功: userId={}, orderId={}", userId, orderId);
-        return Result.success("更新成功");
+        return Result.error("备注更新失败");
     }
 
     /**
-     * 删除订单
-     * DELETE /order/{orderId}
+     * 管理员删除订单
      */
     @DeleteMapping("/{orderId}")
-    public Result<String> delete(@PathVariable String orderId,
-                                 @RequestHeader(value = "userId", required = true) String userId) {
-        // 校验订单是否属于当前用户
+    public Result<String> delete(@PathVariable String orderId) {
+        log.info("管理员删除订单: orderId={}", orderId);
+
         Order order = orderService.getById(orderId);
         if (order == null) {
             return Result.error(404, "订单不存在");
         }
-        if (!order.getUserId().equals(userId)) {
-            return Result.error(403, "无权删除此订单");
+
+        // 只有已完成或已取消的订单才能删除
+        if (order.getOrderStatus() != Constants.ORDER_STATUS_COMPLETED
+                && order.getOrderStatus() != Constants.ORDER_STATUS_CANCELLED) {
+            return Result.error(400, "只有已完成或已取消的订单才能删除");
         }
 
         boolean success = orderService.delete(orderId);
         if (success) {
-            log.info("删除订单成功: userId={}, orderId={}", userId, orderId);
+            log.info("管理员删除订单成功: {}", orderId);
             return Result.success("删除成功");
         }
         return Result.error("删除失败");

@@ -87,6 +87,9 @@ public class OrderDTO {
         private String cancelReason;
 
         // 注意：payTime 由后端自动生成，前端不需要传递
+
+        private String logisticsCompany;  // 物流公司
+        private String trackingNumber;    // 物流单号
     }
 
     /**
@@ -95,7 +98,7 @@ public class OrderDTO {
     @Data
     public static class Query {
         private String orderSn;
-        private String userId;
+        private String userName;
         private Integer orderStatus;
         private Integer payStatus;
         private String startTime;
@@ -136,6 +139,7 @@ public class OrderDTO {
         private LocalDateTime createTime;
         private LocalDateTime updateTime;
         private List<OrderItemResponse> items;
+        private String remark;
 
         public static Response fromPO(com.easymall.entity.po.Order po) {
             if (po == null) return null;
@@ -163,6 +167,7 @@ public class OrderDTO {
             response.setCancelReason(po.getCancelReason());
             response.setCreateTime(po.getCreateTime());
             response.setUpdateTime(po.getUpdateTime());
+            response.setRemark(po.getRemark());
 
             // 设置订单状态名称
             String[] statusNames = {"待付款", "待发货", "待收货", "已完成", "已取消", "售后中"};
