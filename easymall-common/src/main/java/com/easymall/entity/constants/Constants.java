@@ -4,6 +4,7 @@ public class Constants {
     private static final String REDIS_KEY_PREFIX ="easymall:";
     public static  final String REDIS_KEY_CHECK_CODE = REDIS_KEY_PREFIX + "checkCode:";
     public static final String REDIS_KEY_TOKEN_INFO_ADMIN = REDIS_KEY_PREFIX + "token:admin:";
+    public static final String REDIS_KEY_USER_TOKEN = REDIS_KEY_PREFIX + "token:user:";
     // 分类相关
     public static final String REDIS_KEY_CATEGORY_TREE = REDIS_KEY_PREFIX + "category:tree";
     // 过期时间（秒）
@@ -54,4 +55,15 @@ public class Constants {
     public static final Integer PAY_TYPE_WECHAT = 1;    // 微信支付
     public static final Integer PAY_TYPE_ALIPAY = 2;    // 支付宝
     public static final Integer PAY_TYPE_BALANCE = 3;   // 余额支付
+
+    // ==================== 用户状态 ====================
+    /**
+     * 用户状态 - 启用
+     */
+    public static final Integer USER_STATUS_ENABLED = 1;
+
+    /**
+     * 用户状态 - 禁用
+     */
+    public static final Integer USER_STATUS_DISABLED = 0;
 }

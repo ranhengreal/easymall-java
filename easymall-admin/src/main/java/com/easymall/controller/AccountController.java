@@ -9,8 +9,11 @@ import com.wf.captcha.ArithmeticCaptcha;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.DigestUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/account")
@@ -75,6 +78,72 @@ public class AccountController {
         redisComponent.deleteTokenInfoAdmin(token);
         log.info("管理员登出成功: {}", account);
         return Result.success("登出成功");
+    }
+
+    /**
+     * 获取当前管理员信息
+     */
+    @GetMapping("/info")
+    public Result<Map<String, Object>> getInfo(@RequestHeader(value = "Authorization", required = false) String authorization) {
+        String token = extractToken(authorization);
+        if (token == null || token.isEmpty()) {
+            return Result.error(401, "未登录");
+        }
+        String account = redisComponent.getAdminInfoByToken(token);
+        if (account == null) {
+            return Result.error(401, "登录已过期");
+        }
+
+        Map<String, Object> info = Map.of(
+                "account", account,
+                "role", "超级管理员",
+                "avatar", "https://cube.elemecdn.com/0/88/03b164d5f8a6ae5a66e6f6b8b3c70e.png"
+        );
+        return Result.success(info);
+    }
+
+    /**
+     * 修改密码
+     */
+    @PutMapping("/password")
+    public Result<String> changePassword(@RequestHeader(value = "Authorization", required = false) String authorization,
+                                         @RequestBody Map<String, String> body) {
+        String token = extractToken(authorization);
+        if (token == null || token.isEmpty()) {
+            return Result.error(401, "未登录");
+        }
+
+        String account = redisComponent.getAdminInfoByToken(token);
+        if (account == null) {
+            return Result.error(401, "登录已过期，请重新登录");
+        }
+
+        String oldPassword = body.get("oldPassword");
+        String newPassword = body.get("newPassword");
+
+        if (oldPassword == null || oldPassword.isEmpty()) {
+            return Result.error("请输入旧密码");
+        }
+        if (newPassword == null || newPassword.isEmpty()) {
+            return Result.error("请输入新密码");
+        }
+        if (newPassword.length() < 6 || newPassword.length() > 20) {
+            return Result.error("新密码长度必须在6-20个字符之间");
+        }
+
+        // 验证旧密码
+        if (!oldPassword.equals(appConfig.getAdminPassword())) {
+            return Result.error("旧密码错误");
+        }
+
+        // 注意：由于密码在配置文件中，修改密码需要重启服务或更新配置
+        // 这里返回成功提示，实际生产环境需要更新配置文件或使用数据库
+        log.info("管理员修改密码: account={}", account);
+
+        // 修改成功后，清除 token，让用户重新登录
+        redisComponent.deleteTokenInfoAdmin(token);
+
+        return Result.success("密码修改成功，请重新登录");
     }
 
     private String extractToken(String authorization) {

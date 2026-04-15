@@ -9,10 +9,10 @@
         <groupId>com.easymall</groupId>
         <artifactId>easymall</artifactId>
         <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>easymall-common</artifactId>
-    <version>1.0.0</version>
 
     <dependencies>
         <!-- Spring Boot Web -->
@@ -39,7 +39,7 @@
             <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
         </dependency>
 
-        <!-- MyBatis -->
+        <!-- 原生 MyBatis -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
@@ -58,7 +58,7 @@
             <artifactId>easy-captcha</artifactId>
         </dependency>
 
-        <!-- Nashorn JavaScript 引擎（Java 21 需要，用于验证码） -->
+        <!-- Nashorn -->
         <dependency>
             <groupId>org.openjdk.nashorn</groupId>
             <artifactId>nashorn-core</artifactId>
@@ -71,33 +71,26 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Spring Security（用于 BCrypt 密码加密） -->
+        <!-- Spring Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- Spring AI MCP -->
+        <!-- Spring AI -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-mcp-client-webflux</artifactId>
         </dependency>
 
-        <!-- Spring AI Ollama -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-ollama</artifactId>
         </dependency>
 
-        <!-- Spring AI Elasticsearch Vector Store -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-vector-store-elasticsearch</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -9,10 +9,10 @@
         <groupId>com.easymall</groupId>
         <artifactId>easymall</artifactId>
         <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>easymall-web</artifactId>
-    <version>1.0.0</version>
 
     <dependencies>
         <!-- 公共模块 -->

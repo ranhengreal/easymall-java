@@ -77,6 +77,8 @@ public interface OrderMapper {
     @Delete("DELETE FROM orders WHERE order_id = #{orderId}")
     int deleteById(@Param("orderId") String orderId);
 
+    // ==================== 统计查询 ====================
+
     @Select("SELECT COUNT(*) FROM orders")
     Integer countAll();
 
@@ -84,7 +86,21 @@ public interface OrderMapper {
     Integer countByStatus(@Param("status") Integer status);
 
     @Select("SELECT SUM(pay_amount) FROM orders WHERE order_status = 3")
-    BigDecimal sumTotalAmountByStatus(@Param("status") Integer status);
+    BigDecimal sumTotalAmountByStatus();
+
+    /**
+     * 按日期范围统计销售额（已完成订单）
+     */
+    @Select("SELECT SUM(pay_amount) FROM orders WHERE order_status = 3 AND create_time BETWEEN #{startTime} AND #{endTime}")
+    BigDecimal sumAmountByDateRange(@Param("startTime") String startTime, @Param("endTime") String endTime);
+
+    /**
+     * 按日期范围统计订单数
+     */
+    @Select("SELECT COUNT(*) FROM orders WHERE create_time BETWEEN #{startTime} AND #{endTime}")
+    Integer countByDateRange(@Param("startTime") String startTime, @Param("endTime") String endTime);
+
+    // ==================== 订单操作 ====================
 
     /**
      * 更新订单备注

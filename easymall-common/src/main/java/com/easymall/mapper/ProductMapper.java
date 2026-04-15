@@ -4,6 +4,7 @@ import com.easymall.entity.po.Product;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ProductMapper {
@@ -91,4 +92,17 @@ public interface ProductMapper {
      */
     @Select("SELECT COUNT(*) FROM product")
     Integer countAll();
+
+    /**
+     * 获取热销商品排行
+     */
+    @Select("SELECT p.product_id, p.product_name, p.main_image, SUM(oi.quantity) as total_sales " +
+            "FROM product p " +
+            "JOIN order_item oi ON p.product_id = oi.product_id " +
+            "JOIN orders o ON oi.order_id = o.order_id " +
+            "WHERE o.order_status = 3 " +
+            "GROUP BY p.product_id " +
+            "ORDER BY total_sales DESC " +
+            "LIMIT #{limit}")
+    List<Map<String, Object>> selectHotProducts(@Param("limit") int limit);
 }
