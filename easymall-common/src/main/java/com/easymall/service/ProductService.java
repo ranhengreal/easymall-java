@@ -27,9 +27,14 @@ public interface ProductService {
     boolean add(Product product);
 
     /**
-     * 更新商品（包含SKU和状态）
+     * 更新商品（包含SKU）
      */
     boolean update(Product product);
+
+    /**
+     * 更新商品状态
+     */
+    boolean updateStatus(String productId, Integer status);
 
     /**
      * 删除商品（同时删除关联的SKU）

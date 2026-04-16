@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/product")
@@ -22,10 +23,6 @@ public class ProductController {
 
     // ==================== 查询接口 ====================
 
-    /**
-     * 获取商品列表
-     * GET /product
-     */
     @GetMapping
     public Result<List<ProductDTO.Response>> getList() {
         List<Product> list = productService.getList();
@@ -35,10 +32,6 @@ public class ProductController {
         return Result.success(response);
     }
 
-    /**
-     * 获取商品详情
-     * GET /product/{productId}
-     */
     @GetMapping("/{productId}")
     public Result<ProductDTO.Response> getById(@PathVariable String productId) {
         Product product = productService.getById(productId);
@@ -47,7 +40,6 @@ public class ProductController {
         }
         ProductDTO.Response response = ProductDTO.Response.fromPO(product);
 
-        // 填充SKU列表
         if (product.getSkuList() != null) {
             List<ProductDTO.SkuResponse> skuResponses = product.getSkuList().stream()
                     .map(sku -> {
@@ -69,10 +61,6 @@ public class ProductController {
 
     // ==================== 增删改接口 ====================
 
-    /**
-     * 新增商品
-     * POST /product
-     */
     @PostMapping
     public Result<String> add(@Valid @RequestBody ProductDTO.Add dto) {
         Product product = new Product();
@@ -86,7 +74,6 @@ public class ProductController {
         product.setStock(dto.getStock());
         product.setStatus(dto.getStatus());
 
-        // 转换SKU
         if (dto.getSkuList() != null && !dto.getSkuList().isEmpty()) {
             List<ProductSku> skuList = dto.getSkuList().stream()
                     .map(skuDto -> {
@@ -109,10 +96,6 @@ public class ProductController {
         return Result.error("新增失败");
     }
 
-    /**
-     * 更新商品（包含状态更新）
-     * PUT /product/{productId}
-     */
     @PutMapping("/{productId}")
     public Result<String> update(@PathVariable String productId,
                                  @Valid @RequestBody ProductDTO.Update dto) {
@@ -127,9 +110,8 @@ public class ProductController {
         product.setPrice(dto.getPrice());
         product.setStock(dto.getStock());
         product.setSort(dto.getSort());
-        product.setStatus(dto.getStatus());  // 状态在这里一起更新
+        product.setStatus(dto.getStatus());
 
-        // 转换SKU
         if (dto.getSkuList() != null && !dto.getSkuList().isEmpty()) {
             List<ProductSku> skuList = dto.getSkuList().stream()
                     .map(skuDto -> {
@@ -156,9 +138,22 @@ public class ProductController {
     }
 
     /**
-     * 删除商品
-     * DELETE /product/{productId}
+     * 更新商品状态（单独接口）
+     * PUT /admin/product/{productId}/status
      */
+    @PutMapping("/{productId}/status")
+    public Result<String> updateStatus(@PathVariable String productId,
+                                       @RequestBody Map<String, Integer> body) {
+        Integer status = body.get("status");
+        log.info("更新商品状态: productId={}, status={}", productId, status);
+
+        boolean success = productService.updateStatus(productId, status);
+        if (success) {
+            return Result.success("状态更新成功");
+        }
+        return Result.error("状态更新失败");
+    }
+
     @DeleteMapping("/{productId}")
     public Result<String> delete(@PathVariable String productId) {
         boolean success = productService.delete(productId);

@@ -36,4 +36,4 @@ app:
 
 # 上传文件绝对路径
 upload:
-  path: D:/Java实践项目/workspace-teach/easymall-java/easymall-uploads
+  path: ${user.dir}/easymall-uploads

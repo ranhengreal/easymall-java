@@ -155,6 +155,24 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public boolean updateStatus(String productId, Integer status) {
+        try {
+            // 调用 Mapper 中专门的状态更新方法
+            int result = productMapper.updateStatus(productId, status);
+            if (result > 0) {
+                // 清除缓存
+                clearCache();
+                clearProductCache(productId);
+                log.info("更新商品状态成功: productId={}, status={}", productId, status);
+            }
+            return result > 0;
+        } catch (Exception e) {
+            log.error("更新商品状态失败", e);
+            return false;
+        }
+    }
+
+    @Override
     @Transactional
     public boolean delete(String productId) {
         // 检查是否存在
