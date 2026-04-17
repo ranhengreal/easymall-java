@@ -68,7 +68,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     private boolean isPublicApi(String uri) {
         String[] publicPaths = {
                 "/user/checkCode", "/user/login", "/user/register",
-                "/product/list", "/product/",
+                "/product/list", "/product/",  "/banner/list",
                 "/category/tree", "/brand/enabled",
                 "/images/", "/test/"
         };

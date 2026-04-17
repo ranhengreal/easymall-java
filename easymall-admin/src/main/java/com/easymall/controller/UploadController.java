@@ -39,4 +39,13 @@ public class UploadController {
         String url = uploadService.uploadImage(file, "avatar");
         return Result.success(url);
     }
+
+    /**
+     * 上传轮播图图片
+     */
+    @PostMapping("/banner")
+    public Result<String> uploadBannerImage(@RequestParam("file") MultipartFile file) {
+        String url = uploadService.uploadImage(file, "banner");
+        return Result.success(url);
+    }
 }
